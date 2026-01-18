@@ -1,0 +1,62 @@
+# Recommended to set at runtime
+seed: 0
+mode: train # train val test predict
+data: ump_oc
+logger: false # true false
+key: # wandb key
+
+data_module:
+  dataset:
+    train_file_path: "data/oc/ump_oc_w2_train.parquet"
+    val_file_path: "data/oc/ump_oc_w2_val.parquet"
+    test_file_path: "data/oc/ump_oc_w2_test.parquet"
+    predict_file_path:
+  dataloader:
+    batch_size: 64
+    num_workers: 0
+
+model:
+  lr: 1e-4
+  d_model: 512
+  n_layers: 6
+  n_head: 8
+  dim_feedforward: 1024
+  dropout: 0
+  rt_width: 2
+  max_charge: 10
+  train_phase: sampler # teacher sampler
+  topk: 8
+
+trainer:
+  train:
+    devices: [0]
+    max_epochs: 200
+    log_every_n_steps: 10
+    accelerator: auto
+    strategy: auto # auto  ddp_find_unused_parameters_true
+  test:
+    devices: [0]
+  predict:
+    devices: [0]
+  ckpt_path:
+
+callbacks:
+  lr_monitor:
+    logging_interval: step
+  early_stopping:
+    monitor: val/Pep Recall
+    mode: max
+    patience: 10
+  checkpoint:
+    dirpath: outputs/checkpoints/${wandb.name}
+    filename: "{epoch}-{step}-{val.loss:.3f}"
+    monitor: val/Pep Recall
+    mode: max
+    save_top_k: 1
+    save_last: true
+
+wandb:
+  project: experiments
+  name: ${model.train_phase}-${mode}-${data}-${seed}-${now:%Y%m%d-%H%M%S}
+  save_dir: ./wandb
+  log_model: false
