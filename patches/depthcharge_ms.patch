@@ -1,0 +1,35 @@
+--- a/depthcharge/primitives.py
++++ b/depthcharge/primitives.py
+@@ -29,9 +29,10 @@
+     "N+0.984": "N[Deamidated]",
+     "Q+0.984": "Q[Deamidated]",
+     "C+57.021": "C[Carbamidomethyl]",
++    "E-18.011": "E[pyro-Glu]",
++    "C-17.027": "C[Ammonia-loss]",
+ }
+ 
+-
+ @dataclass
+ class Peptide:
+     """A peptide sequence with or without modification and/or charge.
+--- a/depthcharge/tokenizers/peptides.py
++++ b/depthcharge/tokenizers/peptides.py
+@@ -192,7 +192,7 @@
+         """
+         decoded = super().detokenize(
+             tokens=tokens,
+-            join=False,
++            join=join,
+             trim_start_token=trim_start_token,
+             trim_stop_token=trim_stop_token,
+         )
+@@ -200,9 +200,6 @@
+         if self.reverse:
+             decoded = [d[::-1] for d in decoded]
+ 
+-        if join:
+-            decoded = ["".join(pep) for pep in decoded]
+-
+         return decoded
+ 
+     @classmethod
